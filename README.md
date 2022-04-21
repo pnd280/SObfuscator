@@ -471,7 +471,7 @@ Nothing here yet. This is lame but i will somehow try to implement this in the f
 Original
 
 ```autoit
-MsgBox(4096, "SObfuscator", "Hello Word" & @CRLF & "Únìcôđẽ")
+MsgBox(4096, "SObfuscator", "Hello World" & @CRLF & "Únìcôđẽ")
 ```
 
 Obfuscated
@@ -523,7 +523,7 @@ Almost all the lines are written in abnormal format, it is very hard to figured 
 
 This line
 ```autoit
-MsgBox(4096, "SObfuscator", "Hello Word" & @CRLF & "Únìcôđẽ")
+MsgBox(4096, "SObfuscator", "Hello World" & @CRLF & "Únìcôđẽ")
 ```
 is equivalent to
 ```autoit
