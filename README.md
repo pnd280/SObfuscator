@@ -3,10 +3,8 @@ AutoIt3 Obfuscator written in AutoIt3
 
 This is an **AutoIt3** code obfuscator written in **AutoIt3**, is designed and developed since March 2022. The one and only purpose of this project is to **prevent** your AutoIt3 original scripts from being pirated or analysed.
 
-0.0.1 Beta is available for download.
-
 ## Motivations
-Throughout years of developing and distributing softwares/scripts with AutoIt3 under both commercial and private closed-source format. I and maybe all developers are not wish their intellectual properties being pirated or modified without consent, specifically for AutoIt3 where it's so easy to extract the original script from compiled products. I, myself have demanded a real working Obfuscator for so so long, as (almost all) public released Obfuscators are not working properly, poorly made, or were deprecated for unknown reasons, afaik... I tried to ask and do searches in many AutoIt communities but found no hopes but meanwhile i learned lots of thing that helped and motivated me making this project. Welp, "fine, i'll do it myself".
+Throughout years of developing and distributing softwares/scripts with AutoIt3 under both commercial and private closed-source format. I and maybe all developers are not wish their intellectual properties being pirated or modified without consent, specifically for AutoIt3 where it's so easy to extract the original script from compiled products. I, myself have demanded a real working Obfuscator for so so long, as (almost all) public released Obfuscators are not working properly, poorly made, or deprecated for unknown reasons, afaik... I tried to ask and do searches in many AutoIt communities but found no hopes but meanwhile i learned lots of thing that helped and motivated me making this project. Welp, "fine, i'll do it myself".
 
 ## Todos
 In priority order
@@ -46,7 +44,7 @@ For now the obfuscator only supports:
 - `$variables`
 - `'string literals'`
 - `Numbers`, `0xHexNumbers`
-- `@macros`
+- `@macros` ([Potential problems](#potential-problems)#1)
 - `True`, `False`, `Default`
 - Native & User defined `functions(...)`
 - `.dotStatements`
@@ -534,6 +532,9 @@ As for the demo, i intentionally point out this line, but without reading to thi
 
 ## Usage
 Nothing here yet.
+
+## Potential problems
+1. `@error` and `@extended` will be automatically re-assign when enter a function, this is an expected behavior in native AutoIt3. Applying certain strategies can lead to unexpected behaviors in some cases where another function is being execute prior to the obfuscated macros (mostly in the same line). If your obfuscated script not working properly, this can be the case and can be resolved by not using `SetError`, `SetExtended` or any equivalents, define them by yourself.
 
 ## Limitations
 1. Although i mentioned before in [Rename user defined functions](#rename-user-defined-functions), this strategy is done by using **Au3Stripper**, not the Obfuscator engine itself.
