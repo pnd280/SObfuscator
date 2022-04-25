@@ -1,6 +1,8 @@
 # SObfuscator
 AutoIt3 Obfuscator written in AutoIt3
 
+## Due to the lack of time, this public free-ware version has been postponed until (at least) the end of 2022, there will be no patches or updates until further notices. If you're interested in the private version, which of course includes nightly build with latest features and direct support from author, send me an email at pnd280@gmail.com.
+
 This is an **AutoIt3** code obfuscator written in **AutoIt3**, is designed and developed since March 2022. The one and only purpose of this project is to **prevent** your AutoIt3 original scripts from being pirated or analysed.
 
 ## Motivations
@@ -534,7 +536,7 @@ As for the demo, i intentionally point out this line, but without reading to thi
 Nothing here yet.
 
 ## Potential problems
-1. `@error` and `@extended` will be automatically re-assign when enter a function, this is an expected behavior in native AutoIt3. Applying certain strategies can lead to unexpected behaviors in some cases where another function is being execute prior to the obfuscated macros (mostly in the same line). If your obfuscated script not working properly, this can be the case and can be resolved by not using `SetError`, `SetExtended` or any equivalents, define them by yourself.
+1. `@error` and `@extended` will be automatically re-assign when enter a function, this is an expected behavior in native AutoIt3. Applying certain strategies can lead to unexpected behaviors in some cases where another function is being execute prior to the obfuscated macros (mostly in the same line). If your obfuscated script not working properly, this might be the case and can be resolved by not using `SetError`, `SetExtended` or any equivalents, define them by yourself.
 
 ## Limitations
 1. Although i mentioned before in [Rename user defined functions](#rename-user-defined-functions), this strategy is done by using **Au3Stripper**, not the Obfuscator engine itself.
