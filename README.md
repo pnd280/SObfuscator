@@ -2,6 +2,8 @@
 
 An AutoIt Obfuscator written in pure AutoIt.
 
+![SObfuscator in action](https://raw.githubusercontent.com/pnd280/SObfuscator/main/assets/imgs/demo.png)
+
 **Table of Contents**
 
 - [SObfuscator](#sobfuscator)
