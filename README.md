@@ -170,7 +170,7 @@ Despite my efforts to search for a real working obfuscator, I found that most of
 
 ### Potential Issues
 
-1. When (mostly) native functions are executed, two specific macros `@error` and `@extended` are automatically reassigned. This is an expected behavior in native AutoIt3. However, certain strategies can result in unexpected behaviors in rare cases where another function is executed before the obfuscated macros, particularly if they are on the same line. If your obfuscated script is not functioning correctly, this might be the cause, and it can be resolved by avoiding the use of `SetError`, `SetExtended`, or any equivalents. Instead, define them yourself.
+1. When (mostly) native functions are executed, two specific macros `@error` and `@extended` are automatically reassigned. This is an expected behavior in native AutoIt3. However, certain strategies can result in unexpected behaviors in rare cases where another function is executed before the obfuscated macros, particularly if they are on the same line. If your obfuscated script is not functioning correctly, this might be the cause, and it can be resolved by avoiding the use of `SetError`, `SetExtended`, or any equivalents. Instead, define them yourself. [Issue#1](https://github.com/pnd280/SObfuscator/issues/1)
 
 ## Getting Started
 
