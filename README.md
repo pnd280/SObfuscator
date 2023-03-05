@@ -157,6 +157,7 @@ Despite my efforts to search for a real working obfuscator, I found that most of
    ```
 
 2. ⚠️⚠️⚠️ **CAN NOT** obfuscate Object methods (`Object.method()`) and properties (`Object.properties`) that are being used explicitly at the **left side** of an assign statement. This is probably a native AutoIt3 limitation, afaik.
+
    ❌ This will not (can't) be obfuscated
    ```autoit
       $Object.properties = 1 ; trying to assign a value to a property
@@ -174,6 +175,7 @@ Despite my efforts to search for a real working obfuscator, I found that most of
 ## Getting Started
 
 - Prerequisites:
+
   ⚠️ Make sure these installed on default directory `C:\Program Files (x86)\AutoIt3`
 
   - [AutoIt v3.3.16.1](https://www.autoitscript.com/site/autoit/downloads/) or higher (not tested on older versions).
