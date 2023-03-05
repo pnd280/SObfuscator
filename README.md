@@ -111,7 +111,7 @@ EndFunc
 - **Q: Is this project still being maintained?**
   **A**: Yes and continuing. (currently March 2023)
 - **Q: Why the source code is not available?**
-  **A**: At this time, I do not have any plans to release the source code publicly. This decision is based on my current efforts to explore commercialization options. While I understand that this news may be disappointing to some, I appreciate your understanding and support as I work to bring my product to the market.
+  **A**: At this time, I do not have any plans to release the source code publicly. This decision is based on my current efforts to explore commercialization options.
   **If you wish to obtain access to the latest build**, please do not hesitate to [contact me](#contact). I would be happy to discuss options for licensing and provide you with the necessary resources to use the obfuscator to its fullest potential.
 
 ## Motivations
