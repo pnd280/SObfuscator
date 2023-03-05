@@ -1,557 +1,200 @@
 # SObfuscator
-AutoIt3 Obfuscator written in AutoIt3
 
-## Due to the lack of time, this public free-ware version has been postponed until (at least) the end of 2022, there will be no patches or updates until further notices. If you're interested in the private version, which of course includes nightly build with latest features and direct support from author, send me an email at pnd280@gmail.com.
-
-This is an **AutoIt3** code obfuscator written in **AutoIt3**, is designed and developed since March 2022. The one and only purpose of this project is to **prevent** your AutoIt3 original scripts from being pirated or analysed.
-
-## Motivations
-Throughout years of developing and distributing softwares/scripts with AutoIt3 under both commercial and private closed-source format. I and maybe all developers are not wish their intellectual properties being pirated or modified without consent, specifically for AutoIt3 where it's so easy to extract the original script from compiled products. I, myself have demanded a real working Obfuscator for so so long, as (almost all) public released Obfuscators are not working properly, poorly made, or deprecated for unknown reasons, afaik... I tried to ask and do searches in many AutoIt communities but found no hopes but meanwhile i learned lots of thing that helped and motivated me making this project. Welp, "fine, i'll do it myself".
-
-## Todos
-In priority order
-- [x] ~~Stripper module: strip `;comments`, merge `#includes`, strip unused `Func functions(...) ... EndFunc`.~~ **Au3Stripper** 
-- [x] ~~Beautifier module~~ **Tidy**
-- [ ] Finish [Usage](#usage) section.
-- [ ] Refactor.
-- [ ] Stop bullsh1ting and upload the real codes.
-- [ ] Build own function rename module.
-
-## Highlights
-- [x] Able to parse callback functions. ([Limitations](#limitations)#1)
-- [x] Supports unicode.
-- [x] Supports COM dot statements. ([Limitations](#limitations)#2)
-- [x] Automatically split very long line to smaller parts (>4095 characters).
-- [x] Integrates countermeasures against analysing & deobfuscating.
-	  Uncompiled obfuscated scripts might not be able to properly execute at analyser's environment.
-
-## FAQ
-- Q: Is this project still being maintained?
-  A: Yes. (April 21 2022)
-- Q: Is source code available?
-  A: Not yet ready for public usage.
-
-<!-- - This is the naviagation to [**Usage**](#usage) section for those who don't want to read and only here to use the Obfuscator. -->
-
-## Overview
-
-`original_script.au3` => Obfuscation Engine ([Parser](#parser) + Obfuscation Modules/[Strategies](#obfuscation-strategies)) => `obfuscated_script.au3`
-
-## Parser
-Nothing here yet.
-
-## Obfuscatable elements
-
-For now the obfuscator only supports:
-- `$variables`
-- `'string literals'`
-- `Numbers`, `0xHexNumbers`
-- `@macros` ([Potential problems](#potential-problems)#1)
-- `True`, `False`, `Default`
-- Native & User defined `functions(...)`
-- `.dotStatements`
-
-## Obfuscation strategies
-These strategies are not in any particular order and only performed in the obfuscated script, original one is untouched.
-
-#### Rename variables
-
-
-<table>
-<thead>
-<tr>
-<td class="table">
-
-```autoit
-Global $iVar = 12345
-Local $sVariable = 'SObfuscator'
-Dim $aArray = [1, 2, 3]
-```
-
-</td>
-<td class="table">==></td>
-<td class="table">
-
-```autoit
-Global $9c21n1bc = 12345
-Local $qwoishfx = 'SObfuscator'
-Dim $_wdx8_10 = [1, 2, 3]
-```
-
-</td>
-</tr>
-</thead>
-</table>
-
-Of course, all references to the renamed variables are also replaced.
-
-#### Rename user defined functions
-
-
-<table>
-<thead>
-<tr>
-<td class="table">
-
-```autoit
-Call('a')
-Call(b)
-
-Func a()
-
-EndFunc
-
-Func b()
-
-EndFunc
-
-Func c()
-
-EndFunc
-```
-
-</td>
-<td class="table">==></td>
-<td class="table">
-
-```autoit
-Call('X01h16ba')
-Call(_w1Ukpm_)
-
-Func X01h16ba()
-
-EndFunc
-
-Func _w1Ukpm_()
-
-EndFunc
-
-Func Onw620zm()
-
-EndFunc
-```
-
-</td>
-</tr>
-</thead>
-</table>
-
-All references to the renamed variables are also replaced, including callbacks.
-See also: [Replace used functions with variables](#replace-used-functions-with-variables).
-
-#### Replace encrypted string literals with variables
-
-
-<table>
-<thead>
-<tr>
-<td class="table">
-
-```autoit
-Local $sString1 = 'This'
-Local $sString2 = "is"
-Local $sString3 = '''SObfuscator''' ; apostrophe escape
-
-a('b')
-
-Func a($sCallback)
-	Call($sCallback)
-EndFunc
-
-Func b()
-
-EndFunc
-```
-
-</td>
-<td class="table">==></td>
-<td class="table">
-
-```autoit
-#Region This will be hidden
-Global $1rj28nrx = BinaryToString('0x54686973', 4) ; This
-Global $a42k1x4m = BinaryToString('0x6973', 4) ; is
-Global $_bj_291j = BinaryToString('0x27534F626675736361746F7227', 4) ; 'SObfuscator'
-Global $jjjjjjjj = BinaryToString('0x54686973', 4) ; b
-#EndRegion This will be hidden
-
-Local $sString1 = $1rj28nrx 
-Local $sString2 = $a42k1x4m 
-Local $sString3 = $_bj_291j 
-
-a($jjjjjjjj)
-
-Func a($sCallback)
-	Call($sCallback)
-EndFunc
-
-Func b()
-
-EndFunc
-```
-
-</td>
-</tr>
-</thead>
-</table>
-
-Support quotation and apostrophe escapes.
-Use slightly modified version of native **StringToBinary** for encryption.
-See also: [Replace used functions with variables](#replace-used-functions-with-variables).
-
-#### Replace encrypted numbers with variables
-
-
-<table>
-<thead>
-<tr>
-<td class="table">
-
-```autoit
-Local $iNum = 66
-Local $iHexNum = 0x8
-Local $aiArray[3] = [0, 1, 2]
-
-a(1, 0x2)
-
-Func a($iParam1, $iParam2)
-	
-EndFunc
-```
-
-</td>
-<td class="table">==></td>
-<td class="table">
-
-```autoit
-#Region This will be hidden
-Global $1rj28nrx = Number(BinaryToString('0x3636', 4))
-Global $a42k1x4m = Number(BinaryToString('0x38', 4))
-Global $q98wf9q_ = Number(BinaryToString('0x33', 4))
-Global $0vais9us = Number(BinaryToString('0x0', 4))
-Global $9f0x_qfw9 = Number(BinaryToString('0x1', 4))
-Global $jjjjjjj3 = Number(BinaryToString('0x2', 4))
-Global $w8fqyxn = Number(BinaryToString('0x1', 4))
-Global $__xc271n = Number(BinaryToString('0x2', 4))
-#EndRegion This will be hidden
-
-Local $iNum = $1rj28nrx
-Local $iHexNum = $a42k1x4m
-Local $aiArray[$q98wf9q_] = [$0vais9us, $9f0x_qfw9, $jjjjjjj3]
-
-a($w8fqyxn, $__xc271n)
-
-Func a($iParam1, $iParam2)
-	
-EndFunc
-```
-
-</td>
-</tr>
-</thead>
-</table>
-
-Hex numbers are converted and treated as normal number format.
-
-
-#### Replace encrypted macros and keywords with variables
-
-
-<table>
-<thead>
-<tr>
-<td class="table">
-
-```autoit
-Local $iYear = @YEAR
-Local $sString = 'abc' & @CRLF & 'xyz'
-
-If (1 == True) Then
-	Local $bBool = False
-EndIf
-
-Func a($vParam = Default)
-
-EndFunc
-```
-
-</td>
-<td class="table">==></td>
-<td class="table">
-
-```autoit
-#Region This will be hidden
-Global $1rj28nrx = Execute(BinaryToString(0x4059454152, 4)) ; @YEAR
-Global $a42k1x4m = Execute(BinaryToString(0x4043524C46, 4)) ; @CRLF
-Global $_bj_291j = Execute(BinaryToString(0x54727565, 4)) ; True
-Global $0qw9fujm = Execute(BinaryToString(0x46616C7365, 4)) ; False
-Global $jjjjjjjj = Execute(BinaryToString(0x44656661756C74, 4)) ; Default
-#EndRegion This will be hidden
-
-Local $iYear = $1rj28nrx
-Local $sString = 'abc' & $a42k1x4m & 'xyz'
-
-If (1 == $_bj_291j) Then
-	Local $bBool = $0qw9fujm
-EndIf
-
-Func a($vParam = $jjjjjjjj)
-
-EndFunc
-```
-
-</td>
-</tr>
-</thead>
-</table>
-
-All native `@macros` and only keywords `True`, `False`, `Default` are replaced.
-
-
-#### Replace used functions with variables
-
-<table>
-<thead>
-<tr>
-<td class="table">
-
-```autoit
-Call('a')
-Call(b)
-
-b()
-
-Func a()
-
-EndFunc
-
-Func b()
-
-EndFunc
-```
-
-</td>
-<td class="table">==></td>
-<td class="table">
-
-```autoit
-#Region This will be hidden
-Global $hc98211q = Execute(BinaryToString('0x43616C6C', 4)) ; Call
-Global $_wqj281n = Execute(BinaryToString('0x61', 4)) ; a
-Global $xu8921n8 = Execute(BinaryToString('0x62', 4)) ; b
-#EndRegion This will be hidden
-
-$hc98211q('a')
-$hc98211q(b)
-
-$xu8921n8()
-
-Func a()
-
-EndFunc
-
-Func b()
-
-EndFunc
-```
-
-</td>
-</tr>
-</thead>
-</table>
-
-Native functions that use function name as a parameter (only as *single string literal/user function handle*) are automatically detected and replaced, with user defined functions you have to use *user function handles* (function name without quotations, Eg: `MyFunc(a) instead of MyFunc('a')`). Otherwise the engine would not be able to parse them.
-
-#### Shuffle orders of function definitions
-
-
-<table>
-<thead>
-<tr>
-<td class="table">
-
-```autoit
-Call('a')
-Call(b)
-
-Func a()
-
-EndFunc
-
-Func b()
-
-EndFunc
-
-Func c()
-
-EndFunc
-```
-
-</td>
-<td class="table">==></td>
-<td class="table">
-
-```autoit
-Func b()
-
-EndFunc
-
-Call('a')
-Call(b)
-
-Func c()
-
-EndFunc
-
-Func a()
-
-EndFunc
-```
-
-</td>
-</tr>
-</thead>
-</table>
-
-Order of function's definitions is not important.
-
-#### Hide dot statements
-<table>
-<thead>
-<tr>
-<td class="table">
-
-```autoit
-Local $var = someThing().find
-```
-
-</td>
-<td class="table">==></td>
-<td class="table">
-
-```autoit
-Local $var = Execute('someThing().find')
-```
-
-</td>
-</tr>
-</thead>
-</table>
-
-The statement inside **Execute** will be obfuscated as a normal string.
-Currently, left-sided dot statement of assign statements can NOT be pass to **Execute**.
-
-#### Hide variables
-
-Declarations of variable which is generated by replacement strategies are not explicitly written in the script (you won't find the line `$var = value`), they are implicit and hidden in an encrypted data string (called as **TBL**) which can be stored inside the script itself or somewhere else.
-
-This is done by:
-- Manipulating AutoIt3 native **Execute**, **Assign** functions.
-- Adding `#AutoIt3Wrapper_Run_AU3Check=n` at the beginning of the obfuscated script.
-
-See also: [Demo](#demo)
-
-
-## Anti deobfuscate/debug/analyse strategies
-
-#### Using weird variable format
-This format is being use all over the script to anti common RegEx patterns that analyser use for deobfuscation.
-
-#### Detect debug programs
-Nothing here yet.
-
-#### Detect decompilation
-Nothing here yet.
-
-#### Store TBL data online
-Nothing here yet. This is lame but i will somehow try to implement this in the future.
+An AutoIt Obfuscator written in pure AutoIt.
+
+**Table of Contents**
+
+- [SObfuscator](#sobfuscator)
+	- [Disclaimer](#disclaimer)
+	- [Demo](#demo)
+	- [FAQ](#faq)
+	- [Motivations](#motivations)
+	- [Highlights](#highlights)
+		- [Strategies](#strategies)
+	- [Limitations](#limitations)
+		- [Potential Issues](#potential-issues)
+	- [Getting Started](#getting-started)
+	- [Usage](#usage)
+	- [Contributing](#contributing)
+	- [Acknowledgements](#acknowledgements)
+	- [Contact](#contact)
+
+## Disclaimer
+
+Obfuscation does not provide any additional protection to the compiled executables. The purpose of obfuscation is to make reverse engineering significantly more challenging and almost impossible to understand for those who are not familiar with the syntax. The only things that would be lost are variables and function names, as well as original function definition orders.
+
+This program is for personal and educational use only, and not intended for any malicious purposes. Use at your own risk!
 
 ## Demo
 
-Original
+**Original script:**
 
 ```autoit
 MsgBox(4096, "SObfuscator", "Hello World" & @CRLF & "Únìcôđẽ")
 ```
 
-Obfuscated
+**Obfuscated script of the latest build with lowest obfuscation level:**
+
+<details>
+  <summary>Don't reveal or your brain will explode 🤯</summary>
 
 ```autoit
-
 #AutoIt3Wrapper_Run_AU3Check=n
-_uB5WDrN()
-Func ofS7HJLS($5XrMdukn, $LwGzOvbl)
-	$5XrMdukn = $hVabmUwU($5XrMdukn, 0x4)
-	If Int($LwGzOvbl) == 0x1 Then $5XrMdukn = $Kpzd4H5Y($5XrMdukn)
-	If Int($LwGzOvbl) == 0x2 Then $5XrMdukn = $M1Pyimpj($5XrMdukn)
-	Return $5XrMdukn
+#EndRegion
+Func _q7_()
+Global $ijiiiiijijiiiiiijjjjiiiiiij
+$ijiiiiijijiiiiiijjjjiiiiiij&="696A69696969696A696A6969696969696A6A6A6A6A6A6969696A6A4F7836696A69696969696A696A6969696969696A6A6A6A6A696A6A6A6A694F7836696A69696969696A696A6969696969696A6A6A6A6A6A696969696A4F7836696A69696969696A696A6969696969696A6A6A6A6A6A69696969694F7836696A69696969696A696A6969696969696A6A6A6A6A6A6969696A694F7836696A69696969696A696A6969696969696A6A6A6A6A696A6A6A6A6A0D0A3533344636323636373537333633363137343646373254344437333637343236463738544333394136454333414336334333423443343931453142414244543430343335323443343654343836353643364336463230353736463732364336345433343330333933360D0A3036313630363036303632"
 EndFunc
-Func _uB5WDrN()
-	Global $Kpzd4H5Y = Execute, $hVabmUwU = BinaryToString, $M1Pyimpj = Number, $TiHuoFF3 = StringSplit, $vLv29AGK = Assign, $Wad2bhNh = InetRead, $Fqlk_2Qb = StringIsSpace
-	Global $MM_weRNA = GWOBPyBJ, $PgHG3NY3 = ofS7HJLS, $cogd1gcd = @CRLF
-	Global $BBSko5FC = LPvNNDSF(), $BBSko5FC = D1PDMdt2()
+Func _h4_($ijiiiiijijiiiiiijjjjjijjiji,$ijiiiiijijiiiiiijjjjjijjiij)
+$ijiiiiijijiiiiiijjjjjijjiji=$ijiiiiijijiiiiiijjjjjijijjj($ijiiiiijijiiiiiijjjjjijjiji)
+If $ijiiiiijijiiiiiijjjjjijijij($ijiiiiijijiiiiiijjjjjijjiij)==((((3-1)+(-1))-6)-(-6))Then $ijiiiiijijiiiiiijjjjjijjiji=$ijiiiiijijiiiiiijjjjjijiiji($ijiiiiijijiiiiiijjjjjijjiji)
+If $ijiiiiijijiiiiiijjjjjijijij($ijiiiiijijiiiiiijjjjjijjiij)==((((((((-5)/(-1))+9)+6)+(-4))+2)-12)+(-4))Then $ijiiiiijijiiiiiijjjjjijjiji=$ijiiiiijijiiiiiijjjjjiijjij($ijiiiiijijiiiiiijjjjjijjiji)
+Return $ijiiiiijijiiiiiijjjjjijjiji
 EndFunc
-Func D1PDMdt2()
-	Global $OEjUsZAX = $Kpzd4H5Y($2GcsNrY5[1]), $XYQgRGwg = $Kpzd4H5Y($2GcsNrY5[2]), $5LMn25gy = $Kpzd4H5Y($2GcsNrY5[3]), $VqHOidRn = $Kpzd4H5Y($2GcsNrY5[4]), $LwGzOvbl = $Kpzd4H5Y($2GcsNrY5[5])
-	Global $_ = $Kpzd4H5Y
-	$_ = ($_) (Chr(Random(64 + SRandom(-2139808481), 122, 1)) & Chr(Random(65, 122, 1)) & Chr(Random(65, 122, 1)) & Chr(Random(65, 122, 1)) & Chr(Random(65 + SRandom(-2139808481), 122, 1)) & Chr(SRandom(-2138722446) - 1 + Random(65, 122, 1)) & Chr(Random(65, 122, 1)) & Chr(Random(65, 122, 1)) & Chr(Random(65, 122, 1))) ("{EE09B103-97E0-11CF-978F-00A02463E06F}")
-	$_(-1) = $_
-	For $9BmFpU6C = 1 To $5LMn25gy[0]
-		$_(Number($5LMn25gy[$9BmFpU6C])) = $PgHG3NY3($VqHOidRn[$9BmFpU6C], $LwGzOvbl[$9BmFpU6C])
-	Next
+Func _v0_()
+If($ijiiiiijijiiiiiijjjjijjijii(ijiiiiijijiiiiiijjjjjiiiiii((Chr(Random(31+SRandom(-928504524),126,1))&Chr(Random(31+SRandom(-1133051585),126,1))&Chr(Random(31+SRandom(-142029444),126,1))&Chr(Random(31+SRandom(-719764953),126,1))&Chr(Random(31+SRandom(-658502186),126,1))&Chr(Random(31+SRandom(-1962476507),126,1))&Chr(Random(31+SRandom(-1121846165),126,1))&Chr(Random(31+SRandom(-19526189),126,1))&Chr(Random(31+SRandom(-383665623),126,1))&Chr(Random(31+SRandom(-1654495080),126,1))&Chr(Random(31+SRandom(-654628869),126,1))&Chr(Random(31+SRandom(-311952466),126,1))&Chr(Random(31+SRandom(-1570158297),126,1))&Chr(Random(31+SRandom(-482002524),126,1))&Chr(Random(31+SRandom(-1916503685),126,1))&Chr(Random(31+SRandom(-1150050465),126,1))&Chr(Random(31+SRandom(-1655545082),126,1))&Chr(Random(31+SRandom(-459824845),126,1))&Chr(Random(31+SRandom(-585875457),126,1))&Chr(Random(31+SRandom(-590921947),126,1))&Chr(Random(31+SRandom(-1844886372),126,1))&Chr(Random(31+SRandom(-860446463),126,1))&Chr(Random(31+SRandom(-1175313929),126,1))&Chr(Random(31+SRandom(-1930201384),126,1))&Chr(Random(31+SRandom(-1088078756),126,1))&Chr(Random(31+SRandom(-1866624723),126,1))&Chr(Random(31+SRandom(-182565304),126,1))))))Then Exit
+Local $ijiiiiijijiiiiiijjjijjjjjij
+$ijiiiiijijiiiiiijjjijjjjjij&=(Chr(Random(31+SRandom(-1108297573),126,1))&Chr(Random(31+SRandom(-223839024),126,1))&Chr(Random(31+SRandom(-1235509259),126,1))&Chr(Random(31+SRandom(-1384718413),126,1))&Chr(Random(31+SRandom(-372380360),126,1))&Chr(Random(31+SRandom(-1531303129),126,1))&Chr(Random(31+SRandom(-620816463),126,1))&Chr(Random(31+SRandom(-31893080),126,1))&Chr(Random(31+SRandom(-1371082913),126,1))&Chr(Random(31+SRandom(-1823962687),126,1))&Chr(Random(31+SRandom(-1342113839),126,1))&Chr(Random(31+SRandom(-1925709764),126,1))&Chr(Random(31+SRandom(-138530644),126,1))&Chr(Random(31+SRandom(-1650060588),126,1))&Chr(Random(31+SRandom(-405390613),126,1))&Chr(Random(31+SRandom(-700033471),126,1))&Chr(Random(31+SRandom(-1182407085),126,1))&Chr(Random(31+SRandom(-688876110),126,1))&Chr(Random(31+SRandom(-708959171),126,1))&Chr(Random(31+SRandom(-1353183454),126,1))&Chr(Random(31+SRandom(-91082786),126,1))&Chr(Random(31+SRandom(-793958354),126,1))&Chr(Random(31+SRandom(-481493065),126,1))&Chr(Random(31+SRandom(-725993025),126,1))&Chr(Random(31+SRandom(-821509571),126,1))&Chr(Random(31+SRandom(-1264531003),126,1))&Chr(Random(31+SRandom(-169695220),126,1))&Chr(Random(31+SRandom(-99138364),126,1))&Chr(Random(31+SRandom(-1093442875),126,1))&Chr(Random(31+SRandom(-1397262153),126,1))&Chr(Random(31+SRandom(-1095672612),126,1))&Chr(Random(31+SRandom(-616248232),126,1))&Chr(Random(31+SRandom(-1008438231),126,1))&Chr(Random(31+SRandom(-650003422),126,1))&Chr(Random(31+SRandom(-1953102517),126,1))&Chr(Random(31+SRandom(-1207729018),126,1))&Chr(Random(31+SRandom(-1672773195),126,1))&Chr(Random(31+SRandom(-1694728281),126,1))&Chr(Random(31+SRandom(-1427068861),126,1))&Chr(Random(31+SRandom(-139868844),126,1))&Chr(Random(31+SRandom(-1226455433),126,1))&Chr(Random(31+SRandom(-255054703),126,1))&Chr(Random(31+SRandom(-1394613822),126,1))&Chr(Random(31+SRandom(-561517682),126,1))&Chr(Random(31+SRandom(-1475939035),126,1))&Chr(Random(31+SRandom(-132100943),126,1))&Chr(Random(31+SRandom(-145180002),126,1))&Chr(Random(31+SRandom(-1423766643),126,1))&Chr(Random(31+SRandom(-1913286312),126,1))&Chr(Random(31+SRandom(-986411976),126,1))&Chr(Random(31+SRandom(-666605995),126,1))&Chr(Random(31+SRandom(-308093674),126,1))&Chr(Random(31+SRandom(-1416413258),126,1))&Chr(Random(31+SRandom(-174791697),126,1))&Chr(Random(31+SRandom(-483011854),126,1))&Chr(Random(31+SRandom(-1989984805),126,1))&Chr(Random(31+SRandom(-1967462897),126,1))&Chr(Random(31+SRandom(-1699081300),126,1)))&$ijiiiiijijiiiiiijjjjijijiii
+$ijiiiiijijiiiiiijjjijjjjjij&=(Chr(Random(31+SRandom(-182127520),126,1))&Chr(Random(31+SRandom(-1379308728),126,1))&Chr(Random(31+SRandom(-168237101),126,1))&Chr(Random(31+SRandom(-704727612),126,1))&Chr(Random(31+SRandom(-1476423214),126,1))&Chr(Random(31+SRandom(-1902928193),126,1))&Chr(Random(31+SRandom(-929301202),126,1))&Chr(Random(31+SRandom(-438372030),126,1))&Chr(Random(31+SRandom(-1557823776),126,1))&Chr(Random(31+SRandom(-801893318),126,1))&Chr(Random(31+SRandom(-87353991),126,1))&Chr(Random(31+SRandom(-846909312),126,1))&Chr(Random(31+SRandom(-671833959),126,1))&Chr(Random(31+SRandom(-349939323),126,1))&Chr(Random(31+SRandom(-1645139429),126,1))&Chr(Random(31+SRandom(-155457417),126,1))&Chr(Random(31+SRandom(-1783954609),126,1))&Chr(Random(31+SRandom(-1300106409),126,1))&Chr(Random(31+SRandom(-1619757180),126,1))&Chr(Random(31+SRandom(-398698135),126,1))&Chr(Random(31+SRandom(-583306999),126,1))&Chr(Random(31+SRandom(-1888091724),126,1))&Chr(Random(31+SRandom(-50362789),126,1))&Chr(Random(31+SRandom(-1512721942),126,1))&Chr(Random(31+SRandom(-174428001),126,1))&Chr(Random(31+SRandom(-1011802135),126,1))&Chr(Random(31+SRandom(-1764048863),126,1))&Chr(Random(31+SRandom(-1923520062),126,1))&Chr(Random(31+SRandom(-305932492),126,1))&Chr(Random(31+SRandom(-1830892041),126,1))&Chr(Random(31+SRandom(-1260440981),126,1))&Chr(Random(31+SRandom(-533359876),126,1))&Chr(Random(31+SRandom(-1680035404),126,1))&Chr(Random(31+SRandom(-1941510898),126,1))&Chr(Random(31+SRandom(-1274172793),126,1))&Chr(Random(31+SRandom(-667703622),126,1))&Chr(Random(31+SRandom(-304834210),126,1))&Chr(Random(31+SRandom(-1971081143),126,1))&Chr(Random(31+SRandom(-317009494),126,1))&Chr(Random(31+SRandom(-1944787412),126,1))&Chr(Random(31+SRandom(-1692226982),126,1))&Chr(Random(31+SRandom(-1791495899),126,1))&Chr(Random(31+SRandom(-1303555187),126,1))&Chr(Random(31+SRandom(-824757789),126,1))&Chr(Random(31+SRandom(-121850237),126,1))&Chr(Random(31+SRandom(-1893637678),126,1))&Chr(Random(31+SRandom(-1807284638),126,1))&Chr(Random(31+SRandom(-1896226775),126,1))&Chr(Random(31+SRandom(-1150420060),126,1))&Chr(Random(31+SRandom(-1155719295),126,1))&Chr(Random(31+SRandom(-1846439392),126,1))&Chr(Random(31+SRandom(-1927812738),126,1))&Chr(Random(31+SRandom(-1556584017),126,1))&Chr(Random(31+SRandom(-1035074233),126,1))&Chr(Random(31+SRandom(-900921438),126,1))&Chr(Random(31+SRandom(-1946395984),126,1))&Chr(Random(31+SRandom(-1526914520),126,1))&Chr(Random(31+SRandom(-1929235191),126,1))&Chr(Random(31+SRandom(-928839136),126,1))&Chr(Random(31+SRandom(-701338229),126,1))&Chr(Random(31+SRandom(-1103826724),126,1))&Chr(Random(31+SRandom(-1877818874),126,1))&Chr(Random(31+SRandom(-832506509),126,1))&Chr(Random(31+SRandom(-752460155),126,1))&Chr(Random(31+SRandom(-416660821),126,1))&Chr(Random(31+SRandom(-1054124568),126,1))&Chr(Random(31+SRandom(-938840558),126,1))&Chr(Random(31+SRandom(-226730375),126,1))&Chr(Random(31+SRandom(-1879846139),126,1))&Chr(Random(31+SRandom(-178639485),126,1))&Chr(Random(31+SRandom(-1979429934),126,1))&Chr(Random(31+SRandom(-699052421),126,1))&Chr(Random(31+SRandom(-1359267648),126,1))&Chr(Random(31+SRandom(-1353782103),126,1))&Chr(Random(31+SRandom(-793973467),126,1))&Chr(Random(31+SRandom(-1611048845),126,1))&Chr(Random(31+SRandom(-779522165),126,1))&Chr(Random(31+SRandom(-1804615790),126,1))&Chr(Random(31+SRandom(-1618157755),126,1))&Chr(Random(31+SRandom(-909607679),126,1))&Chr(Random(31+SRandom(-298125269),126,1))&Chr(Random(31+SRandom(-1869710741),126,1))&Chr(Random(31+SRandom(-1720315564),126,1))&Chr(Random(31+SRandom(-1481167093),126,1))&Chr(Random(31+SRandom(-1258891172),126,1))&Chr(Random(31+SRandom(-1155929628),126,1))&Chr(Random(31+SRandom(-916429071),126,1))&Chr(Random(31+SRandom(-1966434524),126,1))&Chr(Random(31+SRandom(-1054315422),126,1))&Chr(Random(31+SRandom(-937398442),126,1))&Chr(Random(31+SRandom(-841625824),126,1)))&$ijiiiiijijiiiiiijjjjijijiii
+$ijiiiiijijiiiiiijjjijjjjjij&=(Chr(Random(31+SRandom(-1843103303),126,1))&Chr(Random(31+SRandom(-440852589),126,1))&Chr(Random(31+SRandom(-86288556),126,1))&Chr(Random(31+SRandom(-1358737446),126,1))&Chr(Random(31+SRandom(-1950044192),126,1))&Chr(Random(31+SRandom(-276957162),126,1))&Chr(Random(31+SRandom(-937944680),126,1))&Chr(Random(31+SRandom(-981060352),126,1))&Chr(Random(31+SRandom(-884016142),126,1))&Chr(Random(31+SRandom(-1029262058),126,1))&Chr(Random(31+SRandom(-689760573),126,1))&Chr(Random(31+SRandom(-256392481),126,1))&Chr(Random(31+SRandom(-184531),126,1))&Chr(Random(31+SRandom(-1971641845),126,1))&Chr(Random(31+SRandom(-730422436),126,1))&Chr(Random(31+SRandom(-1088130582),126,1))&Chr(Random(31+SRandom(-1710943418),126,1))&Chr(Random(31+SRandom(-1956546794),126,1))&Chr(Random(31+SRandom(-1749064180),126,1))&Chr(Random(31+SRandom(-157953731),126,1))&Chr(Random(31+SRandom(-286363099),126,1))&Chr(Random(31+SRandom(-1522570631),126,1))&Chr(Random(31+SRandom(-1775705820),126,1))&Chr(Random(31+SRandom(-351939206),126,1))&Chr(Random(31+SRandom(-445485969),126,1))&Chr(Random(31+SRandom(-1873097298),126,1))&Chr(Random(31+SRandom(-1825263379),126,1))&Chr(Random(31+SRandom(-1914114394),126,1))&Chr(Random(31+SRandom(-322734382),126,1))&Chr(Random(31+SRandom(-169666555),126,1))&Chr(Random(31+SRandom(-1990430209),126,1))&Chr(Random(31+SRandom(-1902132846),126,1))&Chr(Random(31+SRandom(-417130544),126,1))&Chr(Random(31+SRandom(-1192180325),126,1))&Chr(Random(31+SRandom(-76628955),126,1))&Chr(Random(31+SRandom(-661758535),126,1))&Chr(Random(31+SRandom(-1745036198),126,1))&Chr(Random(31+SRandom(-1294188290),126,1))&Chr(Random(31+SRandom(-1935862721),126,1))&Chr(Random(31+SRandom(-1611060827),126,1))&Chr(Random(31+SRandom(-522378231),126,1))&Chr(Random(31+SRandom(-1791681422),126,1))&Chr(Random(31+SRandom(-43099170),126,1))&Chr(Random(31+SRandom(-653594178),126,1))&Chr(Random(31+SRandom(-554350987),126,1))&Chr(Random(31+SRandom(-1672847079),126,1))&Chr(Random(31+SRandom(-443220217),126,1))&Chr(Random(31+SRandom(-479439975),126,1))&Chr(Random(31+SRandom(-1998099697),126,1))&Chr(Random(31+SRandom(-181242303),126,1))&Chr(Random(31+SRandom(-730782207),126,1))&Chr(Random(31+SRandom(-606970449),126,1))&Chr(Random(31+SRandom(-952048221),126,1))&Chr(Random(31+SRandom(-509133449),126,1))&Chr(Random(31+SRandom(-576261161),126,1))&Chr(Random(31+SRandom(-1350144108),126,1))&Chr(Random(31+SRandom(-1934426060),126,1))&Chr(Random(31+SRandom(-758852697),126,1))&Chr(Random(31+SRandom(-1989209947),126,1))&Chr(Random(31+SRandom(-212982019),126,1))&Chr(Random(31+SRandom(-1342035375),126,1))&Chr(Random(31+SRandom(-569635476),126,1))&Chr(Random(31+SRandom(-1112691086),126,1))&Chr(Random(31+SRandom(-1079467844),126,1))&Chr(Random(31+SRandom(-1951055911),126,1))&Chr(Random(31+SRandom(-1573070610),126,1))&Chr(Random(31+SRandom(-179026124),126,1))&Chr(Random(31+SRandom(-1389782251),126,1))&Chr(Random(31+SRandom(-382619811),126,1))&Chr(Random(31+SRandom(-517312648),126,1))&Chr(Random(31+SRandom(-1433359946),126,1))&Chr(Random(31+SRandom(-1861355050),126,1)))&$ijiiiiijijiiiiiijjjjijijiii
+$ijiiiiijijiiiiiijjjijjjjjij&=(Chr(Random(31+SRandom(-775275983),126,1))&Chr(Random(31+SRandom(-489079208),126,1))&Chr(Random(31+SRandom(-1967975455),126,1))&Chr(Random(31+SRandom(-1195814239),126,1))&Chr(Random(31+SRandom(-1108014315),126,1))&Chr(Random(31+SRandom(-392382296),126,1))&Chr(Random(31+SRandom(-251848623),126,1))&Chr(Random(31+SRandom(-1900959596),126,1))&Chr(Random(31+SRandom(-416200534),126,1))&Chr(Random(31+SRandom(-1955688420),126,1))&Chr(Random(31+SRandom(-1157094737),126,1))&Chr(Random(31+SRandom(-699063328),126,1))&Chr(Random(31+SRandom(-1238242657),126,1))&Chr(Random(31+SRandom(-1203001987),126,1))&Chr(Random(31+SRandom(-1882850819),126,1))&Chr(Random(31+SRandom(-270502472),126,1))&Chr(Random(31+SRandom(-486389356),126,1))&Chr(Random(31+SRandom(-548434596),126,1))&Chr(Random(31+SRandom(-1441602794),126,1))&Chr(Random(31+SRandom(-1771896248),126,1))&Chr(Random(31+SRandom(-35798856),126,1))&Chr(Random(31+SRandom(-712909286),126,1))&Chr(Random(31+SRandom(-1969157989),126,1))&Chr(Random(31+SRandom(-1712277379),126,1))&Chr(Random(31+SRandom(-1120991254),126,1))&Chr(Random(31+SRandom(-1382362257),126,1))&Chr(Random(31+SRandom(-1741902647),126,1))&Chr(Random(31+SRandom(-248971380),126,1))&Chr(Random(31+SRandom(-233039479),126,1))&Chr(Random(31+SRandom(-620157103),126,1))&Chr(Random(31+SRandom(-631234043),126,1))&Chr(Random(31+SRandom(-662110887),126,1))&Chr(Random(31+SRandom(-1537971863),126,1))&Chr(Random(31+SRandom(-687125534),126,1))&Chr(Random(31+SRandom(-1986974312),126,1))&Chr(Random(31+SRandom(-970955796),126,1))&Chr(Random(31+SRandom(-1586031392),126,1))&Chr(Random(31+SRandom(-734869127),126,1))&Chr(Random(31+SRandom(-1990555157),126,1))&Chr(Random(31+SRandom(-1629662852),126,1))&Chr(Random(31+SRandom(-1818037773),126,1))&Chr(Random(31+SRandom(-8667221),126,1))&Chr(Random(31+SRandom(-1151544956),126,1))&Chr(Random(31+SRandom(-1617098620),126,1))&Chr(Random(31+SRandom(-1611026997),126,1))&Chr(Random(31+SRandom(-966160026),126,1))&Chr(Random(31+SRandom(-370619290),126,1))&Chr(Random(31+SRandom(-300469361),126,1))&Chr(Random(31+SRandom(-1908949867),126,1))&Chr(Random(31+SRandom(-545846683),126,1))&Chr(Random(31+SRandom(-200331796),126,1))&Chr(Random(31+SRandom(-802168325),126,1))&Chr(Random(31+SRandom(-1975634535),126,1))&Chr(Random(31+SRandom(-1853688893),126,1))&Chr(Random(31+SRandom(-1938415060),126,1))&Chr(Random(31+SRandom(-470368128),126,1))&Chr(Random(31+SRandom(-592784085),126,1))&Chr(Random(31+SRandom(-1121714219),126,1))&Chr(Random(31+SRandom(-765282863),126,1))&Chr(Random(31+SRandom(-709800789),126,1))&Chr(Random(31+SRandom(-1689099926),126,1))&Chr(Random(31+SRandom(-521679000),126,1))&Chr(Random(31+SRandom(-1541142414),126,1))&Chr(Random(31+SRandom(-1539352809),126,1))&Chr(Random(31+SRandom(-360625964),126,1))&Chr(Random(31+SRandom(-1209799111),126,1))&Chr(Random(31+SRandom(-769479736),126,1))&Chr(Random(31+SRandom(-1092540731),126,1))&Chr(Random(31+SRandom(-191870143),126,1))&Chr(Random(31+SRandom(-863671194),126,1)))&$ijiiiiijijiiiiiijjjjijijiii
+$ijiiiiijijiiiiiijjjijjjjjij&=(Chr(Random(31+SRandom(-195875762),126,1))&Chr(Random(31+SRandom(-347130699),126,1))&Chr(Random(31+SRandom(-60722764),126,1))&Chr(Random(31+SRandom(-461786948),126,1))&Chr(Random(31+SRandom(-666288961),126,1))&Chr(Random(31+SRandom(-961378061),126,1))&Chr(Random(31+SRandom(-1945302364),126,1))&Chr(Random(31+SRandom(-1011481719),126,1))&Chr(Random(31+SRandom(-899155484),126,1))&Chr(Random(31+SRandom(-1782814011),126,1))&Chr(Random(31+SRandom(-1594737994),126,1))&Chr(Random(31+SRandom(-978595797),126,1))&Chr(Random(31+SRandom(-1264520042),126,1))&Chr(Random(31+SRandom(-1982844865),126,1))&Chr(Random(31+SRandom(-637050915),126,1))&Chr(Random(31+SRandom(-839743669),126,1))&Chr(Random(31+SRandom(-244498147),126,1))&Chr(Random(31+SRandom(-434926049),126,1))&Chr(Random(31+SRandom(-1854663168),126,1))&Chr(Random(31+SRandom(-1511650155),126,1))&Chr(Random(31+SRandom(-854251113),126,1))&Chr(Random(31+SRandom(-681122134),126,1))&Chr(Random(31+SRandom(-1290878634),126,1))&Chr(Random(31+SRandom(-254183257),126,1))&Chr(Random(31+SRandom(-866941625),126,1))&Chr(Random(31+SRandom(-1223616932),126,1))&Chr(Random(31+SRandom(-815855462),126,1))&Chr(Random(31+SRandom(-45874225),126,1))&Chr(Random(31+SRandom(-334986530),126,1))&Chr(Random(31+SRandom(-1017814665),126,1))&Chr(Random(31+SRandom(-791830130),126,1))&Chr(Random(31+SRandom(-137124944),126,1))&Chr(Random(31+SRandom(-1268417762),126,1))&Chr(Random(31+SRandom(-955146661),126,1))&Chr(Random(31+SRandom(-1803954951),126,1))&Chr(Random(31+SRandom(-1762249717),126,1))&Chr(Random(31+SRandom(-700045561),126,1))&Chr(Random(31+SRandom(-258491414),126,1))&Chr(Random(31+SRandom(-738588245),126,1))&Chr(Random(31+SRandom(-867975533),126,1))&Chr(Random(31+SRandom(-1928539768),126,1))&Chr(Random(31+SRandom(-548835714),126,1))&Chr(Random(31+SRandom(-40884839),126,1))&Chr(Random(31+SRandom(-976427916),126,1))&Chr(Random(31+SRandom(-1906154688),126,1))&Chr(Random(31+SRandom(-343411968),126,1))&Chr(Random(31+SRandom(-1949212495),126,1))&Chr(Random(31+SRandom(-1788236000),126,1))&Chr(Random(31+SRandom(-1760038951),126,1))&Chr(Random(31+SRandom(-1805308138),126,1))&Chr(Random(31+SRandom(-127728027),126,1))&Chr(Random(31+SRandom(-158726882),126,1))&Chr(Random(31+SRandom(-521313906),126,1))&Chr(Random(31+SRandom(-853763455),126,1))&Chr(Random(31+SRandom(-46299443),126,1))&Chr(Random(31+SRandom(-1428381255),126,1))&Chr(Random(31+SRandom(-216288526),126,1))&Chr(Random(31+SRandom(-1680607293),126,1))&Chr(Random(31+SRandom(-575671042),126,1))&Chr(Random(31+SRandom(-1201083447),126,1))&Chr(Random(31+SRandom(-757598054),126,1))&Chr(Random(31+SRandom(-1669916176),126,1))&Chr(Random(31+SRandom(-1558925915),126,1))&Chr(Random(31+SRandom(-1250048632),126,1))&Chr(Random(31+SRandom(-1774379708),126,1))&Chr(Random(31+SRandom(-436639154),126,1))&Chr(Random(31+SRandom(-1181459621),126,1))&Chr(Random(31+SRandom(-150881171),126,1))&Chr(Random(31+SRandom(-523146800),126,1))&Chr(Random(31+SRandom(-1017152224),126,1)))&$ijiiiiijijiiiiiijjjjijijiii
+Global $ijiiiiijijiiiiiijjjjiijjijj=$ijiiiiijijiiiiiijjjjijjjiji($ijiiiiijijiiiiiijjjijjjjjij,$ijiiiiijijiiiiiijjjjijijiii,((((((((-7)-8)/(-1))-(-4))+(-6))*(-1))-(-7))+7))
 EndFunc
-Func LPvNNDSF()
-	Global $acH9wcDQ = ''
-	$acH9wcDQ &= "3130303030393934342C3130303030393934352C3130303030393934362C3130303030393934372C3130303030393934382C3130303030393934390D0A3078353334463632363637353733363336313734364637322C307834383635364336433646323035373646373236342C307843333941364543334143363343334234433439314531424142442C3078343034333532344334362C307833343330333933362C30783444373336373432364637380D0A302C302C302C302C322C31"
-	If ($Fqlk_2Qb($acH9wcDQ)) Then Exit
-	Local $Q3UhaekL = ''
-	$Q3UhaekL &= '$MM_weRNA($acH9wcDQ)' & $cogd1gcd
-	$Q3UhaekL &= '$TiHuoFF3($OEjUsZAX, $cogd1gcd, 1)' & $cogd1gcd
-	$Q3UhaekL &= '$TiHuoFF3($XYQgRGwg[1], "," , 1)' & $cogd1gcd
-	$Q3UhaekL &= '$TiHuoFF3($XYQgRGwg[2], "," , 1)' & $cogd1gcd
-	$Q3UhaekL &= '$TiHuoFF3($XYQgRGwg[3], "," , 1)' & $cogd1gcd
-	$Q3UhaekL &= '$vLv29AGK($5LMn25gy[$9BmFpU6C], $PgHG3NY3($VqHOidRn[$9BmFpU6C], $LwGzOvbl[$9BmFpU6C]), 2)' & $cogd1gcd
-	Global $2GcsNrY5 = $TiHuoFF3($Q3UhaekL, $cogd1gcd, 0x1)
+Func _m3_()
+Global $ijiiiiijijiiiiiijjjjiijjjij=$ijiiiiijijiiiiiijjjjjijiiji($ijiiiiijijiiiiiijjjjiijjijj[((((((((-5)+10)-(-3))-1)*1)-7)+8)-7)]),$ijiiiiijijiiiiiijjjjiijjiji=$ijiiiiijijiiiiiijjjjjijiiji($ijiiiiijijiiiiiijjjjiijjijj[((((((3-(-6))-10)-10)+(-7))+1)+19)]),$ijiiiiijijiiiiiijjjjiijijjj=$ijiiiiijijiiiiiijjjjjijiiji($ijiiiiijijiiiiiijjjjiijjijj[(((((-3)*1)-3)/(-1))+(-3))]),$ijiiiiijijiiiiiijjjjiijijii=$ijiiiiijijiiiiiijjjjjijiiji($ijiiiiijijiiiiiijjjjiijjijj[((((10-4)+(-3))+9)-8)]),$ijiiiiijijiiiiiijjjjjijjiij=$ijiiiiijijiiiiiijjjjjijiiji($ijiiiiijijiiiiiijjjjiijjijj[(((((8/1)+14)+(-5))-11)+(-1))])
+$ijiiiiijijiiiiiijjjjjiijiij((Chr(Random(31+SRandom(-1011052338),126,1))&Chr(Random(31+SRandom(-281156066),126,1))&Chr(Random(31+SRandom(-1707783757),126,1))&Chr(Random(31+SRandom(-1603318980),126,1))&Chr(Random(31+SRandom(-1477547594),126,1))&Chr(Random(31+SRandom(-1967494882),126,1))&Chr(Random(31+SRandom(-1675831766),126,1))&Chr(Random(31+SRandom(-1997047916),126,1))&Chr(Random(31+SRandom(-389024685),126,1))&Chr(Random(31+SRandom(-1151163051),126,1))&Chr(Random(31+SRandom(-756811854),126,1))&Chr(Random(31+SRandom(-312451344),126,1))&Chr(Random(31+SRandom(-1703347651),126,1))&Chr(Random(31+SRandom(-1161210630),126,1))&Chr(Random(31+SRandom(-1588982427),126,1))&Chr(Random(31+SRandom(-1472368224),126,1))&Chr(Random(31+SRandom(-1421181415),126,1))&Chr(Random(31+SRandom(-1718655738),126,1))&Chr(Random(31+SRandom(-247497461),126,1))&Chr(Random(31+SRandom(-723241344),126,1))&Chr(Random(31+SRandom(-713842249),126,1))&Chr(Random(31+SRandom(-1993559804),126,1))&Chr(Random(31+SRandom(-1251310298),126,1))&Chr(Random(31+SRandom(-359238697),126,1))&Chr(Random(31+SRandom(-1608606191),126,1))&Chr(Random(31+SRandom(-1127041814),126,1))&Chr(Random(31+SRandom(-1369495221),126,1))),((((((-4)/1)-(-2))-(-5))*1)-2),((((-6)-(-1))-5)-(-11)))
+While(((5/1)-4)-(-7))
+If($ijiiiiijijiiiiiijjjjiiijjij>$ijiiiiijijiiiiiijjjjiijijjj[((((-3)-4)+(-9))-(-16))])Then ExitLoop
+$ijiiiiijijiiiiiijjjjjiijiij($ijiiiiijijiiiiiijjjjiijijjj[$ijiiiiijijiiiiiijjjjiiijjij],$ijiiiiijijiiiiiijjjjijijijj($ijiiiiijijiiiiiijjjjiijijii[$ijiiiiijijiiiiiijjjjiiijjij],$ijiiiiijijiiiiiijjjjjijjiij[$ijiiiiijijiiiiiijjjjiiijjij]),2)
+$ijiiiiijijiiiiiijjjjiiijjij+=((((11-10)-2)-(-2))+0)
+WEnd
 EndFunc
-Func GWOBPyBJ($lK7rchip)
-	Return $hVabmUwU('0x' & $lK7rchip, 0x4)
+Local $ijiiiiijijiiiiiijjjjjijjjij=_d5_()
+Local $ijiiiiijijiiiiiijjjjjijjjii=$ijiiiiijijiiiiiijjjjjijjijj()
+$ijiiiiijijiiiiiijjjjjijjjji($ijiiiiijijiiiiiijjjjjijjjjj,$ijiiiiijijiiiiiijjjjjjiiijj,$ijiiiiijijiiiiiijjjjjjiiiji&$ijiiiiijijiiiiiijjjjjijiiji($ijiiiiijijiiiiiijjjjjjiiiii)&$ijiiiiijijiiiiiijjjjjjiiiij)
+Func _d5_()
+Global $ijiiiiijijiiiiiijjjjjijiiji=Execute((Chr(Random(31+SRandom(-1223674957),126,1))&Chr(Random(31+SRandom(-1641897306),126,1))&Chr(Random(31+SRandom(-1900116085),126,1))&Chr(Random(31+SRandom(-454815189),126,1))&Chr(Random(31+SRandom(-941136733),126,1))&Chr(Random(31+SRandom(-1666704933),126,1))&Chr(Random(31+SRandom(-387615190),126,1)))),$ijiiiiijijiiiiiijjjjjiijiij=$ijiiiiijijiiiiiijjjjjijiiji((Chr(Random(31+SRandom(-588092409),126,1))&Chr(Random(31+SRandom(-1220348455),126,1))&Chr(Random(31+SRandom(-1302089964),126,1))&Chr(Random(31+SRandom(-1857800143),126,1))&Chr(Random(31+SRandom(-1985186631),126,1))&Chr(Random(31+SRandom(-543071370),126,1))))
+$ijiiiiijijiiiiiijjjjjiijiij((Chr(Random(31+SRandom(-724054591),126,1))&Chr(Random(31+SRandom(-1888190050),126,1))&Chr(Random(31+SRandom(-1637821356),126,1))&Chr(Random(31+SRandom(-871545092),126,1))&Chr(Random(31+SRandom(-463318625),126,1))&Chr(Random(31+SRandom(-1869247000),126,1))&Chr(Random(31+SRandom(-1400552768),126,1))&Chr(Random(31+SRandom(-1915366321),126,1))&Chr(Random(31+SRandom(-961432856),126,1))&Chr(Random(31+SRandom(-1486028399),126,1))&Chr(Random(31+SRandom(-1408872367),126,1))&Chr(Random(31+SRandom(-163888351),126,1))&Chr(Random(31+SRandom(-901771693),126,1))&Chr(Random(31+SRandom(-1120680423),126,1))&Chr(Random(31+SRandom(-477909087),126,1))&Chr(Random(31+SRandom(-191958466),126,1))&Chr(Random(31+SRandom(-1070834098),126,1))&Chr(Random(31+SRandom(-1314857427),126,1))&Chr(Random(31+SRandom(-606444299),126,1))&Chr(Random(31+SRandom(-593452311),126,1))&Chr(Random(31+SRandom(-1167283839),126,1))&Chr(Random(31+SRandom(-41743169),126,1))&Chr(Random(31+SRandom(-1413253896),126,1))&Chr(Random(31+SRandom(-1901020036),126,1))&Chr(Random(31+SRandom(-845347722),126,1))&Chr(Random(31+SRandom(-1965218875),126,1))&Chr(Random(31+SRandom(-807604827),126,1))),$ijiiiiijijiiiiiijjjjjijiiji((Chr(Random(31+SRandom(-1016239387),126,1))&Chr(Random(31+SRandom(-1749502297),126,1))&Chr(Random(31+SRandom(-1660554083),126,1))&Chr(Random(31+SRandom(-1906497516),126,1))&Chr(Random(31+SRandom(-69491385),126,1))&Chr(Random(31+SRandom(-1747447171),126,1))&Chr(Random(31+SRandom(-370286493),126,1))&Chr(Random(31+SRandom(-177782775),126,1))&Chr(Random(31+SRandom(-1660171066),126,1))&Chr(Random(31+SRandom(-158126482),126,1))&Chr(Random(31+SRandom(-1069831670),126,1))&Chr(Random(31+SRandom(-1998205564),126,1))&Chr(Random(31+SRandom(-1182723497),126,1))&Chr(Random(31+SRandom(-1695026627),126,1)))),((((((-8)+10)-9)-1)+7)+3))
+$ijiiiiijijiiiiiijjjjjiijiij((Chr(Random(31+SRandom(-109943767),126,1))&Chr(Random(31+SRandom(-110500485),126,1))&Chr(Random(31+SRandom(-661017458),126,1))&Chr(Random(31+SRandom(-368884194),126,1))&Chr(Random(31+SRandom(-354964524),126,1))&Chr(Random(31+SRandom(-311708896),126,1))&Chr(Random(31+SRandom(-1298690541),126,1))&Chr(Random(31+SRandom(-1513349206),126,1))&Chr(Random(31+SRandom(-154456249),126,1))&Chr(Random(31+SRandom(-44198526),126,1))&Chr(Random(31+SRandom(-112716399),126,1))&Chr(Random(31+SRandom(-1772628776),126,1))&Chr(Random(31+SRandom(-1495540588),126,1))&Chr(Random(31+SRandom(-981433369),126,1))&Chr(Random(31+SRandom(-594304073),126,1))&Chr(Random(31+SRandom(-515618033),126,1))&Chr(Random(31+SRandom(-609937026),126,1))&Chr(Random(31+SRandom(-1403340597),126,1))&Chr(Random(31+SRandom(-1758223225),126,1))&Chr(Random(31+SRandom(-1639625972),126,1))&Chr(Random(31+SRandom(-661438401),126,1))&Chr(Random(31+SRandom(-1578312318),126,1))&Chr(Random(31+SRandom(-141313192),126,1))&Chr(Random(31+SRandom(-1484111530),126,1))&Chr(Random(31+SRandom(-127011574),126,1))&Chr(Random(31+SRandom(-773423533),126,1))&Chr(Random(31+SRandom(-693815321),126,1))),$ijiiiiijijiiiiiijjjjjijiiji((Chr(Random(31+SRandom(-1549999464),126,1))&Chr(Random(31+SRandom(-537658371),126,1))&Chr(Random(31+SRandom(-1950212734),126,1))&Chr(Random(31+SRandom(-262269166),126,1))&Chr(Random(31+SRandom(-257526680),126,1))&Chr(Random(31+SRandom(-415888716),126,1)))),(((((((6-(-5))+6)/(-1))-(-3))-(-5))-3)+14))
+$ijiiiiijijiiiiiijjjjjiijiij((Chr(Random(31+SRandom(-161025965),126,1))&Chr(Random(31+SRandom(-1896067268),126,1))&Chr(Random(31+SRandom(-1545863111),126,1))&Chr(Random(31+SRandom(-1522432064),126,1))&Chr(Random(31+SRandom(-1339777502),126,1))&Chr(Random(31+SRandom(-1807296462),126,1))&Chr(Random(31+SRandom(-1557228103),126,1))&Chr(Random(31+SRandom(-126020875),126,1))&Chr(Random(31+SRandom(-1170539078),126,1))&Chr(Random(31+SRandom(-1419482536),126,1))&Chr(Random(31+SRandom(-1157878166),126,1))&Chr(Random(31+SRandom(-1938511020),126,1))&Chr(Random(31+SRandom(-1514124010),126,1))&Chr(Random(31+SRandom(-1462720899),126,1))&Chr(Random(31+SRandom(-1074910376),126,1))&Chr(Random(31+SRandom(-274041656),126,1))&Chr(Random(31+SRandom(-1664676915),126,1))&Chr(Random(31+SRandom(-1200643222),126,1))&Chr(Random(31+SRandom(-48575639),126,1))&Chr(Random(31+SRandom(-1686932403),126,1))&Chr(Random(31+SRandom(-1951731654),126,1))&Chr(Random(31+SRandom(-1917254607),126,1))&Chr(Random(31+SRandom(-1046686043),126,1))&Chr(Random(31+SRandom(-660692321),126,1))&Chr(Random(31+SRandom(-893353691),126,1))&Chr(Random(31+SRandom(-737866980),126,1))&Chr(Random(31+SRandom(-127431245),126,1))),$ijiiiiijijiiiiiijjjjjijiiji((Chr(Random(31+SRandom(-1489383867),126,1))&Chr(Random(31+SRandom(-1618030901),126,1))&Chr(Random(31+SRandom(-185608992),126,1))&Chr(Random(31+SRandom(-1943758002),126,1)))),(((((((1+(-3))+10)-7)-(-8))*1)-(-5))-12))
+$ijiiiiijijiiiiiijjjjjiijiij((Chr(Random(31+SRandom(-508760390),126,1))&Chr(Random(31+SRandom(-123104671),126,1))&Chr(Random(31+SRandom(-52066621),126,1))&Chr(Random(31+SRandom(-3217527),126,1))&Chr(Random(31+SRandom(-1883460073),126,1))&Chr(Random(31+SRandom(-374132777),126,1))&Chr(Random(31+SRandom(-279490995),126,1))&Chr(Random(31+SRandom(-984786498),126,1))&Chr(Random(31+SRandom(-1667701092),126,1))&Chr(Random(31+SRandom(-418001023),126,1))&Chr(Random(31+SRandom(-975234793),126,1))&Chr(Random(31+SRandom(-298600067),126,1))&Chr(Random(31+SRandom(-1774520436),126,1))&Chr(Random(31+SRandom(-1889966074),126,1))&Chr(Random(31+SRandom(-423458157),126,1))&Chr(Random(31+SRandom(-1207400967),126,1))&Chr(Random(31+SRandom(-1277787229),126,1))&Chr(Random(31+SRandom(-1986981643),126,1))&Chr(Random(31+SRandom(-448380838),126,1))&Chr(Random(31+SRandom(-949153543),126,1))&Chr(Random(31+SRandom(-510161651),126,1))&Chr(Random(31+SRandom(-1606344275),126,1))&Chr(Random(31+SRandom(-1878691042),126,1))&Chr(Random(31+SRandom(-436998379),126,1))&Chr(Random(31+SRandom(-1021300931),126,1))&Chr(Random(31+SRandom(-1565120434),126,1))&Chr(Random(31+SRandom(-1162730421),126,1))),$ijiiiiijijiiiiiijjjjjijiiji((Chr(Random(31+SRandom(-1266004268),126,1))&Chr(Random(31+SRandom(-1878915854),126,1))&Chr(Random(31+SRandom(-1446742532),126,1)))),(((7/1)-3)+(-2)))
+$ijiiiiijijiiiiiijjjjjiijiij((Chr(Random(31+SRandom(-1029364074),126,1))&Chr(Random(31+SRandom(-1827186525),126,1))&Chr(Random(31+SRandom(-335924850),126,1))&Chr(Random(31+SRandom(-959444394),126,1))&Chr(Random(31+SRandom(-1447364214),126,1))&Chr(Random(31+SRandom(-338156608),126,1))&Chr(Random(31+SRandom(-1172662143),126,1))&Chr(Random(31+SRandom(-760886383),126,1))&Chr(Random(31+SRandom(-160293982),126,1))&Chr(Random(31+SRandom(-864555218),126,1))&Chr(Random(31+SRandom(-1975993912),126,1))&Chr(Random(31+SRandom(-1760633573),126,1))&Chr(Random(31+SRandom(-1222094225),126,1))&Chr(Random(31+SRandom(-1423329080),126,1))&Chr(Random(31+SRandom(-670293880),126,1))&Chr(Random(31+SRandom(-1090168742),126,1))&Chr(Random(31+SRandom(-489270587),126,1))&Chr(Random(31+SRandom(-1909493786),126,1))&Chr(Random(31+SRandom(-722695265),126,1))&Chr(Random(31+SRandom(-618424176),126,1))&Chr(Random(31+SRandom(-1016866231),126,1))&Chr(Random(31+SRandom(-1226955931),126,1))&Chr(Random(31+SRandom(-1093345269),126,1))&Chr(Random(31+SRandom(-714353648),126,1))&Chr(Random(31+SRandom(-1644847869),126,1))&Chr(Random(31+SRandom(-1700973041),126,1))&Chr(Random(31+SRandom(-1704703852),126,1))),$ijiiiiijijiiiiiijjjjjijiiji((Chr(Random(31+SRandom(-1602714686),126,1))&Chr(Random(31+SRandom(-1008730329),126,1))&Chr(Random(31+SRandom(-1559451537),126,1))&Chr(Random(31+SRandom(-1942046445),126,1))&Chr(Random(31+SRandom(-423230417),126,1))&Chr(Random(31+SRandom(-1695994120),126,1))&Chr(Random(31+SRandom(-483812893),126,1))&Chr(Random(31+SRandom(-1422916044),126,1))&Chr(Random(31+SRandom(-352883737),126,1))&Chr(Random(31+SRandom(-1834687883),126,1))&Chr(Random(31+SRandom(-1591478671),126,1)))),(((((-7)*1)+5)+(-3))-(-7)))
+$ijiiiiijijiiiiiijjjjjiijiij((Chr(Random(31+SRandom(-1885690003),126,1))&Chr(Random(31+SRandom(-1711969250),126,1))&Chr(Random(31+SRandom(-878398785),126,1))&Chr(Random(31+SRandom(-17606813),126,1))&Chr(Random(31+SRandom(-996621387),126,1))&Chr(Random(31+SRandom(-1975572145),126,1))&Chr(Random(31+SRandom(-1934307130),126,1))&Chr(Random(31+SRandom(-1870148269),126,1))&Chr(Random(31+SRandom(-1144674342),126,1))&Chr(Random(31+SRandom(-1701554319),126,1))&Chr(Random(31+SRandom(-101415819),126,1))&Chr(Random(31+SRandom(-1784389690),126,1))&Chr(Random(31+SRandom(-490079768),126,1))&Chr(Random(31+SRandom(-1203745444),126,1))&Chr(Random(31+SRandom(-359957906),126,1))&Chr(Random(31+SRandom(-1836781337),126,1))&Chr(Random(31+SRandom(-824929355),126,1))&Chr(Random(31+SRandom(-1131015384),126,1))&Chr(Random(31+SRandom(-451055831),126,1))&Chr(Random(31+SRandom(-1254278987),126,1))&Chr(Random(31+SRandom(-1123105390),126,1))&Chr(Random(31+SRandom(-1893072830),126,1))&Chr(Random(31+SRandom(-907271221),126,1))&Chr(Random(31+SRandom(-551720929),126,1))&Chr(Random(31+SRandom(-722495870),126,1))&Chr(Random(31+SRandom(-1111154935),126,1))&Chr(Random(31+SRandom(-1163458411),126,1))),$ijiiiiijijiiiiiijjjjjijiiji((Chr(Random(31+SRandom(-1494376486),126,1))&Chr(Random(31+SRandom(-1554972153),126,1))&Chr(Random(31+SRandom(-477884478),126,1))&Chr(Random(31+SRandom(-595264215),126,1))&Chr(Random(31+SRandom(-1744369056),126,1))&Chr(Random(31+SRandom(-1318215551),126,1))&Chr(Random(31+SRandom(-330886401),126,1))&Chr(Random(31+SRandom(-615859838),126,1)))),((((((8+1)-11)-12)+(-2))+2)+16))
+$ijiiiiijijiiiiiijjjjjiijiij((Chr(Random(31+SRandom(-1939698121),126,1))&Chr(Random(31+SRandom(-1989020619),126,1))&Chr(Random(31+SRandom(-256859360),126,1))&Chr(Random(31+SRandom(-298437843),126,1))&Chr(Random(31+SRandom(-1064594802),126,1))&Chr(Random(31+SRandom(-1743960081),126,1))&Chr(Random(31+SRandom(-1856333566),126,1))&Chr(Random(31+SRandom(-1860875133),126,1))&Chr(Random(31+SRandom(-651773313),126,1))&Chr(Random(31+SRandom(-1785663431),126,1))&Chr(Random(31+SRandom(-389691858),126,1))&Chr(Random(31+SRandom(-1722308604),126,1))&Chr(Random(31+SRandom(-1412392675),126,1))&Chr(Random(31+SRandom(-1640081609),126,1))&Chr(Random(31+SRandom(-1502643459),126,1))&Chr(Random(31+SRandom(-1893384508),126,1))&Chr(Random(31+SRandom(-1372019948),126,1))&Chr(Random(31+SRandom(-805321356),126,1))&Chr(Random(31+SRandom(-133392693),126,1))&Chr(Random(31+SRandom(-193300612),126,1))&Chr(Random(31+SRandom(-633616847),126,1))&Chr(Random(31+SRandom(-650849047),126,1))&Chr(Random(31+SRandom(-1413082733),126,1))&Chr(Random(31+SRandom(-806893058),126,1))&Chr(Random(31+SRandom(-1822234949),126,1))&Chr(Random(31+SRandom(-933406502),126,1))&Chr(Random(31+SRandom(-1930829298),126,1))),$ijiiiiijijiiiiiijjjjjijiiji((Chr(Random(31+SRandom(-704487120),126,1))&Chr(Random(31+SRandom(-42590438),126,1))&Chr(Random(31+SRandom(-578497592),126,1))&Chr(Random(31+SRandom(-1158308801),126,1))&Chr(Random(31+SRandom(-1171465132),126,1))&Chr(Random(31+SRandom(-1527628373),126,1))&Chr(Random(31+SRandom(-820095554),126,1))&Chr(Random(31+SRandom(-1309913075),126,1))&Chr(Random(31+SRandom(-889154309),126,1))&Chr(Random(31+SRandom(-647295859),126,1))&Chr(Random(31+SRandom(-1429224556),126,1))&Chr(Random(31+SRandom(-1069638872),126,1))&Chr(Random(31+SRandom(-63909295),126,1)))),(((1-(-6))*(-1))+9))
+$ijiiiiijijiiiiiijjjjjiijiij((Chr(Random(31+SRandom(-1954282086),126,1))&Chr(Random(31+SRandom(-558139330),126,1))&Chr(Random(31+SRandom(-1710410033),126,1))&Chr(Random(31+SRandom(-1959166279),126,1))&Chr(Random(31+SRandom(-1401784670),126,1))&Chr(Random(31+SRandom(-1042180300),126,1))&Chr(Random(31+SRandom(-1458227781),126,1))&Chr(Random(31+SRandom(-1046132939),126,1))&Chr(Random(31+SRandom(-95967104),126,1))&Chr(Random(31+SRandom(-1838125763),126,1))&Chr(Random(31+SRandom(-534716466),126,1))&Chr(Random(31+SRandom(-115881410),126,1))&Chr(Random(31+SRandom(-130113081),126,1))&Chr(Random(31+SRandom(-671825476),126,1))&Chr(Random(31+SRandom(-1152037503),126,1))&Chr(Random(31+SRandom(-20083987),126,1))&Chr(Random(31+SRandom(-1129285227),126,1))&Chr(Random(31+SRandom(-1264695468),126,1))&Chr(Random(31+SRandom(-1315712406),126,1))&Chr(Random(31+SRandom(-1956715609),126,1))&Chr(Random(31+SRandom(-1028677970),126,1))&Chr(Random(31+SRandom(-1816662700),126,1))&Chr(Random(31+SRandom(-838562968),126,1))&Chr(Random(31+SRandom(-1795161531),126,1))&Chr(Random(31+SRandom(-1645397675),126,1))&Chr(Random(31+SRandom(-1987839988),126,1))&Chr(Random(31+SRandom(-1108745295),126,1))),$ijiiiiijijiiiiiijjjjjijiiji((Chr(Random(31+SRandom(-550391571),126,1))&Chr(Random(31+SRandom(-1021592922),126,1))&Chr(Random(31+SRandom(-370719508),126,1))&Chr(Random(31+SRandom(-1316757177),126,1))&Chr(Random(31+SRandom(-1617929804),126,1))&Chr(Random(31+SRandom(-676237547),126,1))&Chr(Random(31+SRandom(-811593050),126,1))&Chr(Random(31+SRandom(-855463455),126,1))&Chr(Random(31+SRandom(-1964087131),126,1)))),((((-6)+4)-10)+14))
+$ijiiiiijijiiiiiijjjjjiijiij((Chr(Random(31+SRandom(-1732974649),126,1))&Chr(Random(31+SRandom(-1843755643),126,1))&Chr(Random(31+SRandom(-1941278307),126,1))&Chr(Random(31+SRandom(-270195063),126,1))&Chr(Random(31+SRandom(-37719228),126,1))&Chr(Random(31+SRandom(-1344263058),126,1))&Chr(Random(31+SRandom(-560813555),126,1))&Chr(Random(31+SRandom(-1184681043),126,1))&Chr(Random(31+SRandom(-480218638),126,1))&Chr(Random(31+SRandom(-1895453454),126,1))&Chr(Random(31+SRandom(-1859421439),126,1))&Chr(Random(31+SRandom(-1015421197),126,1))&Chr(Random(31+SRandom(-1485759477),126,1))&Chr(Random(31+SRandom(-398561449),126,1))&Chr(Random(31+SRandom(-1280943897),126,1))&Chr(Random(31+SRandom(-609305688),126,1))&Chr(Random(31+SRandom(-342006105),126,1))&Chr(Random(31+SRandom(-900597507),126,1))&Chr(Random(31+SRandom(-1736126901),126,1))&Chr(Random(31+SRandom(-1280689615),126,1))&Chr(Random(31+SRandom(-1905987674),126,1))&Chr(Random(31+SRandom(-1140766560),126,1))&Chr(Random(31+SRandom(-1276112282),126,1))&Chr(Random(31+SRandom(-1310502982),126,1))&Chr(Random(31+SRandom(-280704880),126,1))&Chr(Random(31+SRandom(-1659701137),126,1))&Chr(Random(31+SRandom(-202512338),126,1))),$ijiiiiijijiiiiiijjjjjijiiji((Chr(Random(31+SRandom(-436609028),126,1))&Chr(Random(31+SRandom(-161348874),126,1))&Chr(Random(31+SRandom(-1916040778),126,1))&Chr(Random(31+SRandom(-1656562052),126,1)))),((((1*1)+(-2))-(-4))-1))
+$ijiiiiijijiiiiiijjjjjiijiij((Chr(Random(31+SRandom(-1842206287),126,1))&Chr(Random(31+SRandom(-898271352),126,1))&Chr(Random(31+SRandom(-521887693),126,1))&Chr(Random(31+SRandom(-685726048),126,1))&Chr(Random(31+SRandom(-307359905),126,1))&Chr(Random(31+SRandom(-513064653),126,1))&Chr(Random(31+SRandom(-1040455589),126,1))&Chr(Random(31+SRandom(-56827347),126,1))&Chr(Random(31+SRandom(-36389541),126,1))&Chr(Random(31+SRandom(-1510863454),126,1))&Chr(Random(31+SRandom(-414654268),126,1))&Chr(Random(31+SRandom(-1667436148),126,1))&Chr(Random(31+SRandom(-487923964),126,1))&Chr(Random(31+SRandom(-1300060),126,1))&Chr(Random(31+SRandom(-58853982),126,1))&Chr(Random(31+SRandom(-1912364083),126,1))&Chr(Random(31+SRandom(-1919291300),126,1))&Chr(Random(31+SRandom(-220599480),126,1))&Chr(Random(31+SRandom(-679917051),126,1))&Chr(Random(31+SRandom(-1915973705),126,1))&Chr(Random(31+SRandom(-699059698),126,1))&Chr(Random(31+SRandom(-1552577534),126,1))&Chr(Random(31+SRandom(-1785250974),126,1))&Chr(Random(31+SRandom(-810428200),126,1))&Chr(Random(31+SRandom(-1661671922),126,1))&Chr(Random(31+SRandom(-1640272001),126,1))&Chr(Random(31+SRandom(-594808679),126,1))),$ijiiiiijijiiiiiijjjjjijiiji((Chr(Random(31+SRandom(-583124409),126,1))&Chr(Random(31+SRandom(-1361621358),126,1))&Chr(Random(31+SRandom(-1336389859),126,1))&Chr(Random(31+SRandom(-659243013),126,1)))),((((((((-4)-(-5))+(-5))-2)*(-1))-(-2))+12)-18))
+$ijiiiiijijiiiiiijjjjjiijiij((Chr(Random(31+SRandom(-568494067),126,1))&Chr(Random(31+SRandom(-1011753704),126,1))&Chr(Random(31+SRandom(-1367598646),126,1))&Chr(Random(31+SRandom(-1501869730),126,1))&Chr(Random(31+SRandom(-1327375483),126,1))&Chr(Random(31+SRandom(-1745437754),126,1))&Chr(Random(31+SRandom(-1081560095),126,1))&Chr(Random(31+SRandom(-1151085228),126,1))&Chr(Random(31+SRandom(-1129936700),126,1))&Chr(Random(31+SRandom(-1494301714),126,1))&Chr(Random(31+SRandom(-1762902420),126,1))&Chr(Random(31+SRandom(-1394928313),126,1))&Chr(Random(31+SRandom(-1309210376),126,1))&Chr(Random(31+SRandom(-1416061856),126,1))&Chr(Random(31+SRandom(-728369735),126,1))&Chr(Random(31+SRandom(-1058165644),126,1))&Chr(Random(31+SRandom(-803700924),126,1))&Chr(Random(31+SRandom(-509350283),126,1))&Chr(Random(31+SRandom(-355643525),126,1))&Chr(Random(31+SRandom(-523481327),126,1))&Chr(Random(31+SRandom(-119127895),126,1))&Chr(Random(31+SRandom(-737234566),126,1))&Chr(Random(31+SRandom(-976328066),126,1))&Chr(Random(31+SRandom(-1139037616),126,1))&Chr(Random(31+SRandom(-46664030),126,1))&Chr(Random(31+SRandom(-1360706880),126,1))&Chr(Random(31+SRandom(-1491958047),126,1))),$ijiiiiijijiiiiiijjjjjijiiji((Chr(Random(31+SRandom(-614332273),126,1))&Chr(Random(31+SRandom(-1116043246),126,1))&Chr(Random(31+SRandom(-1868221595),126,1))&Chr(Random(31+SRandom(-666971268),126,1))&Chr(Random(31+SRandom(-705533484),126,1)))),(((2+6)+(-4))-2))
+$ijiiiiijijiiiiiijjjjjiijiij((Chr(Random(31+SRandom(-1005717799),126,1))&Chr(Random(31+SRandom(-1881949181),126,1))&Chr(Random(31+SRandom(-1039460988),126,1))&Chr(Random(31+SRandom(-129286865),126,1))&Chr(Random(31+SRandom(-1467063824),126,1))&Chr(Random(31+SRandom(-1952210390),126,1))&Chr(Random(31+SRandom(-163555121),126,1))&Chr(Random(31+SRandom(-1071466587),126,1))&Chr(Random(31+SRandom(-1041742820),126,1))&Chr(Random(31+SRandom(-1698224630),126,1))&Chr(Random(31+SRandom(-1329878973),126,1))&Chr(Random(31+SRandom(-892053357),126,1))&Chr(Random(31+SRandom(-190980592),126,1))&Chr(Random(31+SRandom(-911329870),126,1))&Chr(Random(31+SRandom(-1635843784),126,1))&Chr(Random(31+SRandom(-1940469621),126,1))&Chr(Random(31+SRandom(-1898443213),126,1))&Chr(Random(31+SRandom(-1189414611),126,1))&Chr(Random(31+SRandom(-1101249172),126,1))&Chr(Random(31+SRandom(-1277606205),126,1))&Chr(Random(31+SRandom(-312291755),126,1))&Chr(Random(31+SRandom(-1253050105),126,1))&Chr(Random(31+SRandom(-1655435135),126,1))&Chr(Random(31+SRandom(-1893958236),126,1))&Chr(Random(31+SRandom(-49279433),126,1))&Chr(Random(31+SRandom(-548627293),126,1))&Chr(Random(31+SRandom(-1963107720),126,1))),$ijiiiiijijiiiiiijjjjjijiiji((Chr(Random(31+SRandom(-1715672532),126,1))&Chr(Random(31+SRandom(-1988318084),126,1))&Chr(Random(31+SRandom(-1750124084),126,1))&Chr(Random(31+SRandom(-1101971606),126,1))&Chr(Random(31+SRandom(-1653736209),126,1))&Chr(Random(31+SRandom(-1641763792),126,1)))),((((((((-1)-7)+9)*(-1))-3)-12)-9)-(-27)))
+$ijiiiiijijiiiiiijjjjjiijiij((Chr(Random(31+SRandom(-1005717799),126,1))&Chr(Random(31+SRandom(-1881949181),126,1))&Chr(Random(31+SRandom(-1039460988),126,1))&Chr(Random(31+SRandom(-129286865),126,1))&Chr(Random(31+SRandom(-1467063824),126,1))&Chr(Random(31+SRandom(-1952210390),126,1))&Chr(Random(31+SRandom(-163555121),126,1))&Chr(Random(31+SRandom(-1071466587),126,1))&Chr(Random(31+SRandom(-1041742820),126,1))&Chr(Random(31+SRandom(-1698224630),126,1))&Chr(Random(31+SRandom(-1329878973),126,1))&Chr(Random(31+SRandom(-892053357),126,1))&Chr(Random(31+SRandom(-190980592),126,1))&Chr(Random(31+SRandom(-911329870),126,1))&Chr(Random(31+SRandom(-1635843784),126,1))&Chr(Random(31+SRandom(-1940469621),126,1))&Chr(Random(31+SRandom(-1898443213),126,1))&Chr(Random(31+SRandom(-1189414611),126,1))&Chr(Random(31+SRandom(-1101249172),126,1))&Chr(Random(31+SRandom(-1277606205),126,1))&Chr(Random(31+SRandom(-312291755),126,1))&Chr(Random(31+SRandom(-1253050105),126,1))&Chr(Random(31+SRandom(-1655435135),126,1))&Chr(Random(31+SRandom(-1893958236),126,1))&Chr(Random(31+SRandom(-49279433),126,1))&Chr(Random(31+SRandom(-548627293),126,1))&Chr(Random(31+SRandom(-1963107720),126,1))),$ijiiiiijijiiiiiijjjjjijiiji((Chr(Random(31+SRandom(-1476344410),126,1))&Chr(Random(31+SRandom(-1950919032),126,1))&Chr(Random(31+SRandom(-586988055),126,1))&Chr(Random(31+SRandom(-1524402351),126,1))&Chr(Random(31+SRandom(-821396198),126,1))&Chr(Random(31+SRandom(-600083992),126,1)))))
+$ijiiiiijijiiiiiijjjjjiijiij((Chr(Random(31+SRandom(-1005717799),126,1))&Chr(Random(31+SRandom(-1881949181),126,1))&Chr(Random(31+SRandom(-1039460988),126,1))&Chr(Random(31+SRandom(-129286865),126,1))&Chr(Random(31+SRandom(-1467063824),126,1))&Chr(Random(31+SRandom(-1952210390),126,1))&Chr(Random(31+SRandom(-163555121),126,1))&Chr(Random(31+SRandom(-1071466587),126,1))&Chr(Random(31+SRandom(-1041742820),126,1))&Chr(Random(31+SRandom(-1698224630),126,1))&Chr(Random(31+SRandom(-1329878973),126,1))&Chr(Random(31+SRandom(-892053357),126,1))&Chr(Random(31+SRandom(-190980592),126,1))&Chr(Random(31+SRandom(-911329870),126,1))&Chr(Random(31+SRandom(-1635843784),126,1))&Chr(Random(31+SRandom(-1940469621),126,1))&Chr(Random(31+SRandom(-1898443213),126,1))&Chr(Random(31+SRandom(-1189414611),126,1))&Chr(Random(31+SRandom(-1101249172),126,1))&Chr(Random(31+SRandom(-1277606205),126,1))&Chr(Random(31+SRandom(-312291755),126,1))&Chr(Random(31+SRandom(-1253050105),126,1))&Chr(Random(31+SRandom(-1655435135),126,1))&Chr(Random(31+SRandom(-1893958236),126,1))&Chr(Random(31+SRandom(-49279433),126,1))&Chr(Random(31+SRandom(-548627293),126,1))&Chr(Random(31+SRandom(-1963107720),126,1))),$ijiiiiijijiiiiiijjjjjijiiji((Chr(Random(31+SRandom(-1799227430),126,1))&Chr(Random(31+SRandom(-409366235),126,1))&Chr(Random(31+SRandom(-364440470),126,1))&Chr(Random(31+SRandom(-1985656710),126,1))&Chr(Random(31+SRandom(-1746905591),126,1))&Chr(Random(31+SRandom(-675707082),126,1)))))
 EndFunc
-
-(($_((((((((74-(-21))+83)+(-64))+(-19))*1)+(-42))-54)))(((((((100082736/(-1))+100000429)*(-1))-100016939)-100088808)+300033389)))(($_(((((((-58)+(-82))-(-57))+(-24))+(-94))+200)))(((((100015601-100011732)+100020840)+99950681)+(-99965442))), ($_(((((-82)+23)+47)+11)))(((((((100063169+99962148)+100095353)-100070019)-99939314)+100074522)-100175915)), ($_(((((57-(-42))+(-90))-47)-(-37))))((((99929405+99963748)-99947982)+64774)) & $Kpzd4H5Y(($_((((((((-93)-67)-29)+21)+89)*1)-(-78))))(((((100030969-99950097)-99994796)-99967134)+299891005))) & ($_(((((((23+(-56))+8)-9)*(-1))-20)+(-15))))((((((99976969-100024248)-100095157)/1)-99988858)+300141240)))
+Func _k7_($ijiiiiijijiiiiiijjjijjiiijj)
+Return $ijiiiiijijiiiiiijjjjjiiijji((Chr(Random(31+SRandom(-1552109627),126,1))&Chr(Random(31+SRandom(-200467053),126,1)))&$ijiiiiijijiiiiiijjjijjiiijj,((((((((-2)+8)-1)-9)+3)-7)-7)+19))
+EndFunc
 ```
-Almost all the lines are written in abnormal format, it is very hard to figured out what is what.
 
-This line
-```autoit
-MsgBox(4096, "SObfuscator", "Hello World" & @CRLF & "Únìcôđẽ")
-```
-is equivalent to
-```autoit
-(($_((((((((74-(-21))+83)+(-64))+(-19))*1)+(-42))-54)))(((((((100082736/(-1))+100000429)*(-1))-100016939)-100088808)+300033389)))(($_(((((((-58)+(-82))-(-57))+(-24))+(-94))+200)))(((((100015601-100011732)+100020840)+99950681)+(-99965442))), ($_(((((-82)+23)+47)+11)))(((((((100063169+99962148)+100095353)-100070019)-99939314)+100074522)-100175915)), ($_(((((57-(-42))+(-90))-47)-(-37))))((((99929405+99963748)-99947982)+64774)) & $Kpzd4H5Y(($_((((((((-93)-67)-29)+21)+89)*1)-(-78))))(((((100030969-99950097)-99994796)-99967134)+299891005))) & ($_(((((((23+(-56))+8)-9)*(-1))-20)+(-15))))((((((99976969-100024248)-100095157)/1)-99988858)+300141240)))
-```
+</details>
 
-As for the demo, i intentionally point out this line, but without reading to this point, will you be able understand what this line does? This is next level confusion compared to just using normal `$var($var, $var,...)` format. By skimming through the obfuscated code, your head would probably explode while finding what these weird `$_` with some numbers permutations represented for. 
+## FAQ
+- **Q: Does obfuscation slow down my script?**
+  **A**: Yes, but not significantly. With multi level obfuscation, you either have to sacrifice the obfuscation level or the execution speed. The higher the obfuscation level, the harder it is to deobfuscate, but the slower the execution speed.
 
-## Usage
-Nothing here yet.
+  Obfuscation process is not a heavy task, but it does add some overhead to the execution time. The overhead is not noticeable in most cases, but it is recommended to test your obfuscated script before using it in production.
+- **Q: Is this project still being maintained?**
+  **A**: Yes and continuing. (currently March 2023)
+- **Q: Why the source code is not available?**
+  **A**: At this time, I do not have any plans to release the source code publicly. This decision is based on my current efforts to explore commercialization options. While I understand that this news may be disappointing to some, I appreciate your understanding and support as I work to bring my product to the market.
+  **If you wish to obtain access to the latest build**, please do not hesitate to [contact me](#contact). I would be happy to discuss options for licensing and provide you with the necessary resources to use the obfuscator to its fullest potential.
 
-## Potential problems
-1. `@error` and `@extended` will be automatically re-assign when enter a function, this is an expected behavior in native AutoIt3. Applying certain strategies can lead to unexpected behaviors in some cases where another function is being execute prior to the obfuscated macros (mostly in the same line). If your obfuscated script not working properly, this might be the case and can be resolved by not using `SetError`, `SetExtended` or any equivalents, define them by yourself.
+## Motivations
+
+<details>
+  <summary>Spoiler</summary>
+
+Over the years, I have been developing and distributing softwares/scripts using AutoIt under both commercial and private closed-source formats. As a developer, I am not willing to have my intellectual properties pirated or modified without consent, especially for AutoIt, where it is relatively easy to extract the original script from compiled products.
+
+Despite my efforts to search for a real working obfuscator, I found that most of the publicly available obfuscators were either not functioning properly as expected, poorly made, or outdated for unknown reasons. Although I have reached out and searched for solutions in various AutoIt communities, I was unable to find any useful resources. Nonetheless, this search enabled me to learn a lot, which motivated me to develop my own obfuscator.
+
+</details>
+
+## Highlights
+
+- ✅ Supports unicode.
+- ✅ Automatically split very long line to smaller parts (>4095 characters).
+- ✅ Able to parse Callbacks. ([Limitations](#limitations)#1)
+- ✅ Supports COM dot statements. ([Limitations](#limitations)#2)
+- ✅ Integrates countermeasures against analysing & deobfuscating.
+  Uncompiled obfuscated scripts might not be able to properly execute at analyser's environment.
+- ✅ Multi level obfuscation.
+
+### Strategies
+
+- Rename Variables.
+- Rename User Defined Functions.
+- Replace _encrypted_ Strings Literals with Variables.
+- Replace _encrypted_ Numbers (including numbers in hex format) with Variables.
+- Replace _encrypted_ Macros and Keywords with Variables.
+- Replace all Used Functions (including natives) with Variables.
+- Shuffle orders of all User Defined Functions.
+- Hide dot statements.
+- Hide Variable Declarations.
 
 ## Limitations
-1. Although i mentioned before in [Rename user defined functions](#rename-user-defined-functions), this strategy is done by using **Au3Stripper**, not the Obfuscator engine itself.
-2. Can't obfuscate Object methods and properties that are being used explicitly at the left side of an assign statement. This is probably a native AutoIt3 limitation, afaik.
 
-## Conclusions
-Some might say that AutoIt3 scripts are easy to extract is a good thing in some cases where people are making malwares, malicious bots,... because viruses that were written in AutoIt3 is really popular back then, but i think this should not be an excuse. Nowadays, some AVs still tend to always red flagging AutoIt3 executables regardless of knowing what is it doing. I, myself find this approach really awkward, maybe those AVs are not capable to analyse and simply allow false positives as their very last resort.
+1. Avoid wrapping callback handles with quotes.
 
-In my perspective, the only reliable way to "protect" AutoIt3 source code is to obfuscate it, make it unreadable while maintaining functionality and performance. Obfuscation does NOT add any extra protection to the compiled executables, the word "**prevent**" only meant to make reverse engineering much more harder and nearly impossible to read/understand for those who are not familiar with the syntax. The only things that would be lost are variable, function names and the original function's definition orders.
+   ```autoit
+     HotKeySet('{F1}', _doSomething) ; ✅ DO
+     HotKeySet('{F1}', '_doSomething') ; ❌ DON'T
+   ```
 
-This weakness is unavoidable unless the founders take this matter seriously and make changes, maybe not in the near future but i hope they will do eventually, considering that AutoIt3 is a great language/tool and maybe the best in some tasks that other languages may struggle.
+2. ⚠️⚠️⚠️ **CAN NOT** obfuscate Object methods (`Object.method()`) and properties (`Object.properties`) that are being used explicitly at the **left side** of an assign statement. This is probably a native AutoIt3 limitation, afaik.
+   ❌ This will not (can't) be obfuscated
+   ```autoit
+      $Object.properties = 1 ; trying to assign a value to a property
+   ```
+   ✅ This will be obfuscated
+   ```autoit
+     Local $sVar = $Object.properties ; assigning a property to a variable
+      $Object.doSomething() ; calling a method
+   ```
+
+### Potential Issues
+
+1. When (mostly) native functions are executed, two specific macros `@error` and `@extended` are automatically reassigned. This is an expected behavior in native AutoIt3. However, certain strategies can result in unexpected behaviors in rare cases where another function is executed before the obfuscated macros, particularly if they are on the same line. If your obfuscated script is not functioning correctly, this might be the cause, and it can be resolved by avoiding the use of `SetError`, `SetExtended`, or any equivalents. Instead, define them yourself.
+
+## Getting Started
+
+- Prerequisites:
+  ⚠️ Make sure these installed on default directory `C:\Program Files (x86)\AutoIt3`
+
+  - [AutoIt v3.3.16.1](https://www.autoitscript.com/site/autoit/downloads/) or higher (not tested on older versions).
+  - Latest [SciTE4AutoIt3](https://www.autoitscript.com/site/autoit-script-editor/downloads/).
+
+- Download the latest [release](#getting-started).
+- Run the compiled executable `SObfuscator.exe`.
+
+## Usage
+
+- To be added
+
+## Contributing
+
+_Only request new features (for now)_
+
+- To be added
 
 ## Acknowledgements
+
 - [AutoIt3](https://www.autoitscript.com) for various resources:
-	- [Tidy](https://www.autoitscript.com/autoit3/scite/docs/SciTE4AutoIt3/Tidy.html) & [Au3Stripper](https://www.autoitscript.com/autoit3/scite/docs/SciTE4AutoIt3/Au3Stripper.html).
-	- Many pieces of code across the [forum](https://www.autoitscript.com/forum), mostly RegEx patterns.
-- 721PC, trancexx for main ideas.
-- VSCode & [Loganch](https://github.com/loganch/AutoIt-VSCode) for providing robust IDE.
+  - [Tidy](https://www.autoitscript.com/autoit3/scite/docs/SciTE4AutoIt3/Tidy.html) & [Au3Stripper](https://www.autoitscript.com/autoit3/scite/docs/SciTE4AutoIt3/Au3Stripper.html).
+  - Many pieces of code across the [forum](https://www.autoitscript.com/forum), mostly RegEx patterns.
+- **721PC**, **trancexx** for main ideas.
+- VSCode & [**Loganch**](https://github.com/loganch/AutoIt-VSCode) for providing robust editor 👍.
+
+
+## Contact
+
+Feel free to contact me at pnd280@gmail.com.
