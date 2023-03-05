@@ -2,7 +2,11 @@
 
 An AutoIt Obfuscator written in pure AutoIt.
 
-![SObfuscator in action](https://raw.githubusercontent.com/pnd280/SObfuscator/main/assets/imgs/demo.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/pnd280/SObfuscator/main/assets/imgs/demo.png" alt="SObfuscator in action"> <br/>
+	<i>Please notice that the image is only represent the obfuscated script partially.</i>
+</p>
+
 
 **Table of Contents**
 
@@ -101,7 +105,7 @@ EndFunc
 
 ## FAQ
 - **Q: Does obfuscation slow down my script?**
-  **A**: Yes, but not significantly. With multi level obfuscation, you either have to sacrifice the obfuscation level or the execution speed. The higher the obfuscation level, the harder it is to deobfuscate, but the slower the execution speed.
+  **A**: Yes, but not significantly. With multi obfuscation levels, you either have to sacrifice the obfuscation level or the execution speed. The higher the obfuscation level, the harder it is to deobfuscate, but the slower the execution speed.
 
   Obfuscation process is not a heavy task, but it does add some overhead to the execution time. The overhead is not noticeable in most cases, but it is recommended to test your obfuscated script before using it in production.
 - **Q: Is this project still being maintained?**
@@ -129,7 +133,7 @@ Despite my efforts to search for a real working obfuscator, I found that most of
 - ✅ Supports COM dot statements. ([Limitations](#limitations)#2)
 - ✅ Integrates countermeasures against analysing & deobfuscating.
   Uncompiled obfuscated scripts might not be able to properly execute at analyser's environment.
-- ✅ Multi level obfuscation.
+- ✅ Multi obfuscation levels.
 
 ### Strategies
 
